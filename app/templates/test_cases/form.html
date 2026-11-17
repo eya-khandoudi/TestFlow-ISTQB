@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if tc else 'New' }} Test Case - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-file-earmark-text text-primary"></i>
+                    {{ 'Edit Test Case: ' + tc.tc_code if tc else 'Design New ISTQB Test Case' }}
+                </h5>
+                <small class="text-muted">Includes Boundary Value Analysis input limits and Risk-Based Testing scoring.</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Test Case Code <span class="text-danger">*</span></label>
+                            <input type="text" name="tc_code" class="form-control" placeholder="TC-EP-001"
+                                   value="{{ tc.tc_code if tc else '' }}"
+                                   {% if tc %}readonly{% endif %} required>
+                            <small class="text-muted">Min 3, Max 20 chars</small>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Title / Objective <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Verify cart line quantity lower boundary"
+                                   value="{{ tc.title if tc else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Trace to Requirement (RTM)</label>
+                            <select name="requirement_id" class="form-select">
+                                <option value="">-- No linked requirement --</option>
+                                {% for r in requirements %}
+                                    <option value="{{ r.id }}" {% if tc and tc.requirement_id == r.id %}selected{% endif %}>
+                                        {{ r.req_code }}: {{ r.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Test Type</label>
+                            <select name="test_type" class="form-select">
+                                <option value="Functional" {% if not tc or tc.test_type == 'Functional' %}selected{% endif %}>Functional</option>
+                                <option value="Business Rule" {% if tc and tc.test_type == 'Business Rule' %}selected{% endif %}>Business Rule</option>
+                                <option value="Payment" {% if tc and tc.test_type == 'Payment' %}selected{% endif %}>Payment</option>
+                                <option value="Security" {% if tc and tc.test_type == 'Security' %}selected{% endif %}>Security</option>
+                                <option value="Regression" {% if tc and tc.test_type == 'Regression' %}selected{% endif %}>Regression</option>
+                                <option value="Non-Functional" {% if tc and tc.test_type == 'Non-Functional' %}selected{% endif %}>Non-Functional</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="Low" {% if tc and tc.priority == 'Low' %}selected{% endif %}>Low</option>
+                                <option value="Medium" {% if not tc or tc.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                <option value="High" {% if tc and tc.priority == 'High' %}selected{% endif %}>High</option>
+                                <option value="Critical" {% if tc and tc.priority == 'Critical' %}selected{% endif %}>Critical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Risk-Based Testing Section -->
+                    <div class="card bg-light border p-3 mb-3">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-shield-exclamation text-warning"></i> Risk-Based Testing (RBT) Assessment</h6>
+                        <p class="small text-muted mb-3">Formula: $RiskScore = Likelihood \times Impact$ ($1 \le L, I \le 5$). Used for prioritizing execution sequence.</p>
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Likelihood of Failure (1-5)</label>
+                                <input type="number" id="risk_likelihood" name="risk_likelihood" min="1" max="5" class="form-control"
+                                       value="{{ tc.risk_likelihood if tc else 2 }}" required>
+                                <small class="text-muted">1 (Rare) to 5 (Frequent)</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Impact of Failure (1-5)</label>
+                                <input type="number" id="risk_impact" name="risk_impact" min="1" max="5" class="form-control"
+                                       value="{{ tc.risk_impact if tc else 3 }}" required>
+                                <small class="text-muted">1 (Negligible) to 5 (Catastrophic)</small>
+                            </div>
+                            <div class="col-md-4 text-center mt-3 mt-md-0">
+                                <label class="form-label fw-semibold small d-block">Calculated Risk Score</label>
+                                <div id="risk_preview">
+                                    <span class="badge bg-secondary fs-6">Calculating...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Preconditions</label>
+                        <textarea name="precondition" class="form-control" rows="2" placeholder="e.g. User account test@testflow.qa exists; Cart is empty...">{{ tc.precondition if tc else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Test Steps <span class="text-danger">*</span></label>
+                        <textarea name="steps" class="form-control font-monospace" rows="4" placeholder="1. Navigate to /checkout&#10;2. Enter coupon code 'SAVE20'&#10;3. Click Apply" required>{{ tc.steps if tc else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Expected Result <span class="text-danger">*</span></label>
+                        <textarea name="expected_result" class="form-control" rows="2" placeholder="e.g. Discount is applied and total decreases by $20.00" required>{{ tc.expected_result if tc else '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('test_cases.list_test_cases') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Test Case</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

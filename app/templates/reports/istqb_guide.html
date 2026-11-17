@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}ISTQB Concepts in TestFlow - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold"><i class="bi bi-patch-check-fill text-primary"></i> ISTQB Testing Methodologies in TestFlow</h2>
+    <p class="lead text-muted">
+        How this project applies and implements standardized software testing techniques throughout the SDLC & STLC.
+    </p>
+</div>
+
+<div class="row g-4">
+    <!-- 1. Equivalence Partitioning -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+            <div class="card-body">
+                <h5 class="fw-bold text-primary"><i class="bi bi-pie-chart-fill"></i> 1. Equivalence Partitioning (EP)</h5>
+                <p class="text-muted small"><strong>Goal:</strong> Divide input domain into partitions where all elements are expected to produce equivalent system behavior.</p>
+                
+                <h6 class="fw-semibold small">Application in TestFlow:</h6>
+                <ul class="small mb-3">
+                    <li><strong>User Email Partitioning:</strong> Valid partition (e.g. <code>test@domain.com</code>) vs Invalid partitions (missing <code>@</code>, missing top-level domain, illegal characters).</li>
+                    <li><strong>Risk Rating:</strong> Valid partition integer [1, 5] vs Invalid partitions (&lt; 1, &gt; 5, non-numeric).</li>
+                </ul>
+                <div class="p-2 bg-light rounded small">
+                    <strong>Associated Test Case:</strong> <code>TC-EP-001</code>, <code>TC-EP-002</code><br>
+                    <strong>Automated Test:</strong> <code>tests/istqb/test_equivalence_partitioning.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Boundary Value Analysis -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+            <div class="card-body">
+                <h5 class="fw-bold text-success"><i class="bi bi-arrows-expand"></i> 2. Boundary Value Analysis (BVA)</h5>
+                <p class="text-muted small"><strong>Goal:</strong> Test edges of equivalence partitions, where the highest concentration of software defects typically resides.</p>
+                
+                <h6 class="fw-semibold small">Application in TestFlow:</h6>
+                <ul class="small mb-3">
+                    <li><strong>Cart Item Quantity [1 .. 99]:</strong>
+                        <ul>
+                            <li>Min Boundary: <code>Qty = 1</code> (Valid min)</li>
+                            <li>Below Min: <code>Qty = 0</code> (Invalid boundary &rarr; triggers BUG-001)</li>
+                            <li>Max Boundary: <code>Qty = 99</code> (Valid max)</li>
+                            <li>Above Max: <code>Qty = 100</code> (Invalid boundary &rarr; triggers BUG-002)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="p-2 bg-light rounded small">
+                    <strong>Associated Test Cases:</strong> <code>TC-BVA-003</code>, <code>TC-BVA-004</code>, <code>TC-BVA-005</code>, <code>TC-BVA-006</code><br>
+                    <strong>Automated Test:</strong> <code>tests/istqb/test_boundary_value_analysis.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Decision Table Testing -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+            <div class="card-body">
+                <h5 class="fw-bold text-warning-emphasis"><i class="bi bi-table"></i> 3. Decision Table Testing (DTT)</h5>
+                <p class="text-muted small"><strong>Goal:</strong> Validate business rules involving complex combinations of boolean conditions and resulting actions.</p>
+                
+                <h6 class="fw-semibold small">Application in TestFlow:</h6>
+                <ul class="small mb-3">
+                    <li><strong>Discount Voucher Rules:</strong> Combines order threshold ($ &gt; 100) and promo validity (SAVE20 vs ISTQB10).</li>
+                    <li><strong>Defect Triage SLA:</strong> Severity (Blocker/Critical vs Major) + Environment (Prod vs QA) + Core Flow &rarr; SLA Hours (4h, 8h, 24h, 48h).</li>
+                    <li><strong>IEEE 829 Release Gate Decision:</strong> Open Blockers == 0 AND Pass Rate &ge; 90% AND Critical Tests Pass &rarr; GO / NO-GO.</li>
+                </ul>
+                <div class="p-2 bg-light rounded small">
+                    <strong>Associated Test Cases:</strong> <code>TC-DT-007</code>, <code>TC-DT-008</code><br>
+                    <strong>Automated Test:</strong> <code>tests/istqb/test_decision_table.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. State Transition Testing -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-danger">
+            <div class="card-body">
+                <h5 class="fw-bold text-danger"><i class="bi bi-shuffle"></i> 4. State Transition Testing (STT)</h5>
+                <p class="text-muted small"><strong>Goal:</strong> Verify valid state transitions and guarantee that illegal transitions are strictly rejected by the system.</p>
+                
+                <h6 class="fw-semibold small">Application in TestFlow:</h6>
+                <ul class="small mb-3">
+                    <li><strong>Defect Lifecycle State Machine:</strong>
+                        <div class="badge bg-light text-dark border my-1 p-2">
+                            New &rarr; Assigned &rarr; Open &rarr; Fixed &rarr; Retest &rarr; Closed (or Reopened)
+                        </div>
+                    </li>
+                    <li><strong>Transition Enforcement:</strong> TestFlow blocks illegal transitions like <code>New &rarr; Closed</code> or <code>Open &rarr; Closed</code> directly.</li>
+                </ul>
+                <div class="p-2 bg-light rounded small">
+                    <strong>Implemented in:</strong> <code>app.services.istqb_engine.validate_defect_transition</code><br>
+                    <strong>Automated Test:</strong> <code>tests/istqb/test_state_transition.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Risk-Based Testing -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
+            <div class="card-body">
+                <h5 class="fw-bold text-info"><i class="bi bi-shield-exclamation"></i> 5. Risk-Based Testing (RBT)</h5>
+                <p class="text-muted small"><strong>Goal:</strong> Prioritize test execution and allocate testing effort based on the product risk level of failure.</p>
+                
+                <h6 class="fw-semibold small">Application in TestFlow:</h6>
+                <ul class="small mb-3">
+                    <li><strong>Risk Priority Number:</strong> $RPN = Likelihood \times Impact$ ($1 \le L, I \le 5$, Score $1 \dots 25$).</li>
+                    <li><strong>Dynamic Sorting:</strong> Test Runs prioritize high-risk scenarios first to surface critical blockers early.</li>
+                </ul>
+                <div class="p-2 bg-light rounded small">
+                    <strong>Associated Test Cases:</strong> <code>TC-PAY-009</code> (Score = 15, High Risk), <code>TC-PAY-010</code> (Score = 20, Critical)<br>
+                    <strong>Automated Test:</strong> <code>tests/istqb/test_risk_based_testing.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Error Guessing & Regression -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-secondary">
+            <div class="card-body">
+                <h5 class="fw-bold text-secondary"><i class="bi bi-lightning-charge"></i> 6. Error Guessing & Regression Testing</h5>
+                <p class="text-muted small"><strong>Goal:</strong> Experience-based identification of edge cases, and automated regression suites to guarantee stability after changes.</p>
+                
+                <h6 class="fw-semibold small">Application in TestFlow:</h6>
+                <ul class="small mb-3">
+                    <li><strong>Error Guessing:</strong> SQL Injection payloads, XSS script injection, empty strings, rapid multi-click submissions.</li>
+                    <li><strong>Regression Suite:</strong> Tagged regression test cases executed automatically via <code>pytest -m regression</code>.</li>
+                </ul>
+                <div class="p-2 bg-light rounded small">
+                    <strong>Associated Test Cases:</strong> <code>TC-EG-011</code>, <code>TC-REG-012</code><br>
+                    <strong>Automated Test:</strong> <code>tests/istqb/test_error_guessing.py</code>, <code>tests/regression/test_regression_suite.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

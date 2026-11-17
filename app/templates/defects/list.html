@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Defect Management - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-bug text-danger"></i> Defect Management</h3>
+        <p class="text-muted mb-0">ISTQB Defect Lifecycle: Rigorously managed states (New &rarr; Assigned &rarr; Open &rarr; Fixed &rarr; Retest &rarr; Closed).</p>
+    </div>
+    <a href="{{ url_for('defects.create_defect') }}" class="btn btn-danger">
+        <i class="bi bi-plus-lg"></i> Log New Defect
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <form method="GET" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Status Filter</label>
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All States</option>
+                    <option value="New" {% if current_status == 'New' %}selected{% endif %}>New</option>
+                    <option value="Assigned" {% if current_status == 'Assigned' %}selected{% endif %}>Assigned</option>
+                    <option value="Open" {% if current_status == 'Open' %}selected{% endif %}>Open</option>
+                    <option value="Fixed" {% if current_status == 'Fixed' %}selected{% endif %}>Fixed</option>
+                    <option value="Retest" {% if current_status == 'Retest' %}selected{% endif %}>Retest</option>
+                    <option value="Closed" {% if current_status == 'Closed' %}selected{% endif %}>Closed</option>
+                    <option value="Reopened" {% if current_status == 'Reopened' %}selected{% endif %}>Reopened</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Severity Filter</label>
+                <select name="severity" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Severities</option>
+                    <option value="Blocker" {% if current_severity == 'Blocker' %}selected{% endif %}>Blocker</option>
+                    <option value="Critical" {% if current_severity == 'Critical' %}selected{% endif %}>Critical</option>
+                    <option value="Major" {% if current_severity == 'Major' %}selected{% endif %}>Major</option>
+                    <option value="Minor" {% if current_severity == 'Minor' %}selected{% endif %}>Minor</option>
+                </select>
+            </div>
+            <div class="col-md-4 text-md-end mt-md-4">
+                <a href="{{ url_for('defects.list_defects') }}" class="btn btn-sm btn-outline-secondary">Reset Filters</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Defect Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 130px;">Bug Code</th>
+                        <th>Summary</th>
+                        <th>Severity</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Linked Test Case</th>
+                        <th>Assigned To</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in defects %}
+                    <tr>
+                        <td class="fw-bold">
+                            <a href="{{ url_for('defects.detail_defect', defect_id=d.id) }}" class="text-danger text-decoration-none">
+                                {{ d.bug_code }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">
+                                <a href="{{ url_for('defects.detail_defect', defect_id=d.id) }}" class="text-dark text-decoration-none">
+                                    {{ d.title }}
+                                </a>
+                            </div>
+                            <small class="text-muted">{{ d.environment }}</small>
+                        </td>
+                        <td><span class="badge {{ d.severity | badge_severity }}">{{ d.severity }}</span></td>
+                        <td>
+                            <span class="badge {% if d.priority == 'Urgent' %}bg-danger{% elif d.priority == 'High' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ d.priority }}
+                            </span>
+                        </td>
+                        <td><span class="badge {{ d.status | badge_status }} fs-6">{{ d.status }}</span></td>
+                        <td>
+                            {% if d.tc_code %}
+                                <a href="{{ url_for('test_cases.detail_test_case', tc_id=d.test_case_id) }}" class="badge bg-light text-dark border text-decoration-none">
+                                    {{ d.tc_code }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">Ad-hoc / Manual</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ d.assigned_to }}</td>
+                        <td>
+                            <a href="{{ url_for('defects.detail_defect', defect_id=d.id) }}" class="btn btn-sm btn-outline-secondary">
+                                View / Triage
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No defects matching the selection criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

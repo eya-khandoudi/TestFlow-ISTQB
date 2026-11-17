@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Test Runs - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-play-circle text-primary"></i> Test Runs & Execution Cycles</h3>
+        <p class="text-muted mb-0">STLC Test Execution Phase: Execute scenarios, capture actual outcomes, and generate execution history.</p>
+    </div>
+    <a href="{{ url_for('test_runs.create_test_run') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Initialize New Test Run
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 140px;">Run Code</th>
+                        <th>Run Name</th>
+                        <th>Environment</th>
+                        <th>Status</th>
+                        <th>Progress & Results</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for run in runs %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ run.run_code }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ run.name }}</div>
+                            <small class="text-muted">{{ run.description or 'No description.' }}</small>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ run.environment }}</span></td>
+                        <td><span class="badge bg-primary">{{ run.status }}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-success">{{ run.passed_tests or 0 }} Pass</span>
+                                <span class="badge bg-danger">{{ run.failed_tests or 0 }} Fail</span>
+                                <span class="badge bg-warning text-dark">{{ run.blocked_tests or 0 }} Blocked</span>
+                                <span class="small text-muted">/ {{ run.total_tests }} total</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('test_runs.detail_test_run', run_id=run.id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-play-fill"></i> Execute
+                                </a>
+                                <a href="{{ url_for('main.test_summary_report', run_id=run.id) }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-file-earmark-bar-graph"></i> Report
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No test runs initialized yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

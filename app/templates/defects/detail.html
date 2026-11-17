@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ defect.bug_code }} - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h3 class="fw-bold mb-0 text-danger">{{ defect.bug_code }}</h3>
+            <span class="badge {{ defect.severity | badge_severity }} fs-6">{{ defect.severity }}</span>
+            <span class="badge {{ defect.status | badge_status }} fs-6">{{ defect.status }}</span>
+            <span class="badge bg-secondary">{{ defect.environment }}</span>
+        </div>
+        <h5 class="fw-normal mt-2 mb-0 text-dark">{{ defect.title }}</h5>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('defects.list_defects') }}" class="btn btn-outline-secondary">Back to Defects</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <!-- Defect Details -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-text text-danger"></i> Defect Description & Reproduction</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-muted small text-uppercase fw-bold">Overview</h6>
+                    <p class="p-3 bg-light rounded">{{ defect.description or 'No additional description provided.' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted small text-uppercase fw-bold">Steps to Reproduce</h6>
+                    <pre class="p-3 bg-light rounded" style="white-space: pre-wrap; font-family: inherit;">{{ defect.steps_to_reproduce }}</pre>
+                </div>
+
+                {% if defect.resolution_notes %}
+                <div class="mb-3">
+                    <h6 class="text-muted small text-uppercase fw-bold">Resolution Notes / Developer Comments</h6>
+                    <div class="p-3 bg-success-subtle text-success-emphasis rounded border border-success">
+                        {{ defect.resolution_notes }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Defect History / Audit Trail -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary"></i> State Transition History (ISTQB Lifecycle)</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for h in history %}
+                    <div class="timeline-item">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge {{ h.to_status | badge_status }}">{{ h.to_status }}</span>
+                            <span class="text-muted small">from <strong>{{ h.from_status }}</strong> by <strong>{{ h.changed_by }}</strong></span>
+                            <span class="text-muted small ms-auto">{{ h.changed_at }}</span>
+                        </div>
+                        {% if h.comment %}
+                            <p class="mb-0 mt-1 small text-dark p-2 bg-light rounded">{{ h.comment }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- State Transition Engine Actions Column -->
+    <div class="col-lg-4">
+        <!-- ISTQB State Transition Action Box -->
+        <div class="card border-0 shadow-sm mb-4 border-top border-4 border-primary">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold mb-0"><i class="bi bi-shuffle text-primary"></i> ISTQB State Transition Engine</h6>
+                <small class="text-muted">Enforces legal state transitions according to ISTQB defect lifecycle rules.</small>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Current State:</label>
+                    <div><span class="badge {{ defect.status | badge_status }} fs-6">{{ defect.status }}</span></div>
+                </div>
+
+                {% if allowed_transitions %}
+                    <form method="POST" action="{{ url_for('defects.transition_defect', defect_id=defect.id) }}">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Permitted Next State <span class="text-danger">*</span></label>
+                            <select name="new_status" class="form-select" required>
+                                {% for s in allowed_transitions %}
+                                    <option value="{{ s }}">{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Resolution Notes / Reason</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Required when marking Fixed, Deferred, or Rejected..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Action Performed By</label>
+                            <input type="text" name="changed_by" class="form-control form-control-sm" value="QA Engineer">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right-circle"></i> Apply State Transition
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-secondary small mb-0">
+                        <i class="bi bi-info-circle"></i> Defect is in terminal state '{{ defect.status }}'.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metadata & Linkages -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold mb-0"><i class="bi bi-link-45deg text-secondary"></i> Defect Context</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Priority (SLA)</label>
+                    <div><span class="badge bg-secondary fs-6">{{ defect.priority }}</span></div>
+                </div>
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Assigned Engineer</label>
+                    <div><strong>{{ defect.assigned_to }}</strong></div>
+                </div>
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Originating Test Case</label>
+                    <div>
+                        {% if defect.tc_code %}
+                            <a href="{{ url_for('test_cases.detail_test_case', tc_id=defect.test_case_id) }}" class="fw-bold text-decoration-none">
+                                {{ defect.tc_code }}: {{ defect.tc_title }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Not linked directly</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label class="small text-muted fw-bold">Created On</label>
+                    <div class="small text-muted">{{ defect.created_at }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Requirements Traceability Matrix (RTM) - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-diagram-3 text-primary"></i> Requirements Traceability Matrix (RTM)</h3>
+        <p class="text-muted mb-0">Bi-directional traceability linking <strong>Requirements &rarr; Test Cases &rarr; Executions &rarr; Defects</strong>.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print / Export RTM
+        </button>
+    </div>
+</div>
+
+<!-- Traceability Coverage KPI -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3 bg-white">
+            <span class="text-muted small fw-semibold">Requirements Coverage</span>
+            <div class="d-flex align-items-baseline gap-2 my-1">
+                <h3 class="fw-bold mb-0 text-primary">{{ rtm.coverage_percentage }}%</h3>
+                <span class="text-muted small">({{ rtm.covered_requirements }} of {{ rtm.total_requirements }} covered)</span>
+            </div>
+            <div class="progress mt-2" style="height: 6px;">
+                <div class="progress-bar bg-primary" style="width: {{ rtm.coverage_percentage }}%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm p-3 bg-white">
+            <span class="text-muted small fw-semibold">ISTQB Traceability Principle</span>
+            <p class="small text-muted mb-0 mt-1">
+                Traceability ensures that every requirement has associated test cases (forward traceability) and that every test case exists solely to verify an approved requirement (backward traceability). Gaps indicate untested requirements or scope creep.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if rtm.orphaned_tcs %}
+<div class="alert alert-warning shadow-sm mb-4">
+    <i class="bi bi-exclamation-triangle-fill"></i> <strong>Orphaned Test Cases Detected:</strong> The following test cases have no linked requirements:
+    <ul class="mb-0 mt-1 small">
+        {% for otc in rtm.orphaned_tcs %}
+            <li><strong>{{ otc.tc_code }}</strong>: {{ otc.title }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Full Traceability Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th colspan="2" class="text-center bg-primary-subtle text-primary fw-bold">Requirement (Test Basis)</th>
+                        <th colspan="2" class="text-center bg-info-subtle text-info fw-bold">Test Case (Test Design)</th>
+                        <th class="text-center bg-success-subtle text-success fw-bold">Test Execution</th>
+                        <th class="text-center bg-danger-subtle text-danger fw-bold">Defect (Incident)</th>
+                    </tr>
+                    <tr class="small text-muted">
+                        <th>Code</th>
+                        <th>Requirement Title</th>
+                        <th>TC Code</th>
+                        <th>Test Case Title</th>
+                        <th>Run Status</th>
+                        <th>Bug Code & Severity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rtm.rows %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ row.req_code }}</td>
+                        <td class="small">{{ row.req_title }}</td>
+                        <td>
+                            {% if row.tc_code %}
+                                <a href="{{ url_for('test_cases.detail_test_case', tc_id=row.tc_id) }}" class="fw-bold text-decoration-none">
+                                    {{ row.tc_code }}
+                                </a>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger">No Test Case (Gap!)</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ row.tc_title or '-' }}</td>
+                        <td>
+                            {% if row.exec_status %}
+                                <span class="badge {{ row.exec_status | badge_status }}">{{ row.exec_status }}</span>
+                            {% else %}
+                                <span class="text-muted small">Not Executed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.bug_code %}
+                                <a href="{{ url_for('defects.detail_defect', defect_id=row.defect_id) }}" class="badge bg-danger-subtle text-danger text-decoration-none border border-danger">
+                                    {{ row.bug_code }} ({{ row.bug_severity }})
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}IEEE 829 Test Summary Report - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-file-earmark-bar-graph text-primary"></i> IEEE 829 Test Summary Report</h3>
+        <p class="text-muted mb-0">Official Test Completion Report for Cycle: <strong>{{ run.run_code }}</strong> ({{ run.name }})</p>
+    </div>
+    <div>
+        <button class="btn btn-outline-dark" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print / Save PDF
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm p-4 mb-4">
+    <!-- Header Section -->
+    <div class="border-bottom pb-3 mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="fw-bold text-dark mb-1">Test Completion & Evaluation Report</h4>
+                <div class="text-muted small">Standard: IEEE 829-2008 / ISTQB Test Reporting Standard</div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div><strong>Project:</strong> {{ project.name }}</div>
+                <div><strong>Environment:</strong> {{ run.environment }}</div>
+                <div><strong>Report Date:</strong> 2026-11-17</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Executive Summary & Release Verdict -->
+    <div class="mb-4">
+        <h5 class="fw-bold text-primary mb-3">1. Executive Summary & Exit Gate Decision</h5>
+        <div class="alert alert-{{ gate.css_class }} p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="alert-heading fw-bold mb-1">Release Gate Status: {{ gate.verdict }}</h5>
+                    <p class="mb-0">{{ gate.reason }}</p>
+                </div>
+                <span class="badge bg-{{ gate.css_class }} fs-5 px-3 py-2">{{ gate.verdict }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Test Execution Statistics -->
+    <div class="mb-4">
+        <h5 class="fw-bold text-primary mb-3">2. Execution Metrics & Variance Summary</h5>
+        <div class="row g-3 text-center mb-3">
+            <div class="col-3">
+                <div class="border rounded p-3 bg-light">
+                    <span class="text-muted small d-block">Total Tests</span>
+                    <h3 class="fw-bold mb-0">{{ total }}</h3>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="border rounded p-3 bg-light">
+                    <span class="text-muted small d-block">Passed</span>
+                    <h3 class="fw-bold mb-0 text-success">{{ passed }}</h3>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="border rounded p-3 bg-light">
+                    <span class="text-muted small d-block">Failed</span>
+                    <h3 class="fw-bold mb-0 text-danger">{{ failed }}</h3>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="border rounded p-3 bg-light">
+                    <span class="text-muted small d-block">Blocked / Untested</span>
+                    <h3 class="fw-bold mb-0 text-warning">{{ blocked + untested }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress mb-2" style="height: 20px;">
+            <div class="progress-bar bg-success" style="width: {{ (passed / total * 100) if total > 0 else 0 }}%">{{ pass_rate }}% Pass</div>
+            <div class="progress-bar bg-danger" style="width: {{ (failed / total * 100) if total > 0 else 0 }}%">Fail</div>
+            <div class="progress-bar bg-warning text-dark" style="width: {{ (blocked / total * 100) if total > 0 else 0 }}%">Blocked</div>
+        </div>
+    </div>
+
+    <!-- 3. Residual Defect Analysis -->
+    <div class="mb-4">
+        <h5 class="fw-bold text-primary mb-3">3. Residual Defect Analysis (Open Incidents)</h5>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Bug Code</th>
+                        <th>Summary</th>
+                        <th>Severity</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assignee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in defects %}
+                    <tr>
+                        <td class="fw-bold text-danger">{{ d.bug_code }}</td>
+                        <td>{{ d.title }}</td>
+                        <td><span class="badge {{ d.severity | badge_severity }}">{{ d.severity }}</span></td>
+                        <td>{{ d.priority }}</td>
+                        <td><span class="badge {{ d.status | badge_status }}">{{ d.status }}</span></td>
+                        <td>{{ d.assigned_to }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-2 text-muted">No open incidents recorded in this run.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. Sign-Off & Approvals -->
+    <div class="mt-4 pt-3 border-top">
+        <h5 class="fw-bold text-primary mb-3">4. Sign-Off & Approvals</h5>
+        <div class="row g-4 text-center mt-2">
+            <div class="col-4">
+                <div class="border-top pt-2">
+                    <strong>Lead QA Engineer</strong>
+                    <div class="text-muted small">Status: Approved</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="border-top pt-2">
+                    <strong>Software Development Lead</strong>
+                    <div class="text-muted small">Status: Reviewed</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="border-top pt-2">
+                    <strong>Product Manager / Release Owner</strong>
+                    <div class="text-muted small">Status: Pending Gate Review</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

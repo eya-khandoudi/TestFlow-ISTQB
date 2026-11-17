@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tc.tc_code }} - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h3 class="fw-bold mb-0">{{ tc.tc_code }}</h3>
+            <span class="badge bg-{{ risk.badge_class }} fs-6">Risk Score: {{ risk.score }} ({{ risk.category }})</span>
+            <span class="badge {% if tc.priority == 'Critical' %}bg-danger{% elif tc.priority == 'High' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                Priority: {{ tc.priority }}
+            </span>
+        </div>
+        <p class="text-muted mt-1 mb-0">{{ tc.title }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('test_cases.edit_test_case', tc_id=tc.id) }}" class="btn btn-outline-secondary">Edit</a>
+        <a href="{{ url_for('test_cases.list_test_cases') }}" class="btn btn-outline-primary">Back to Repository</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <!-- Test Specification -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0"><i class="bi bi-card-text text-primary"></i> Test Specification</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-muted small text-uppercase fw-bold">Preconditions</h6>
+                    <div class="p-3 bg-light rounded">{{ tc.precondition or 'None specified.' }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted small text-uppercase fw-bold">Test Steps</h6>
+                    <pre class="p-3 bg-light rounded" style="white-space: pre-wrap; font-family: inherit;">{{ tc.steps }}</pre>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted small text-uppercase fw-bold">Expected Result</h6>
+                    <div class="p-3 bg-light rounded border-start border-4 border-success">{{ tc.expected_result }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Execution History -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary"></i> Execution History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Test Run</th>
+                                <th>Status</th>
+                                <th>Actual Result</th>
+                                <th>Tester</th>
+                                <th>Executed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ex in executions %}
+                            <tr>
+                                <td class="fw-semibold">{{ ex.run_code }}</td>
+                                <td><span class="badge {{ ex.status | badge_status }}">{{ ex.status }}</span></td>
+                                <td class="small">{{ ex.actual_result or 'No logs' }}</td>
+                                <td class="small">{{ ex.executed_by }}</td>
+                                <td class="small text-muted">{{ ex.executed_at or 'Pending' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">No executions recorded for this test case yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata & RBT Column -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h6 class="fw-bold mb-0"><i class="bi bi-shield-check text-success"></i> ISTQB Traceability & Risk</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Linked Requirement (RTM)</label>
+                    <div>
+                        {% if tc.req_code %}
+                            <a href="{{ url_for('requirements.list_requirements') }}" class="fw-bold text-decoration-none">
+                                {{ tc.req_code }}: {{ tc.req_title }}
+                            </a>
+                        {% else %}
+                            <span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Not linked to any requirement</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-muted fw-bold">Test Type</label>
+                    <div><span class="badge bg-secondary">{{ tc.test_type }}</span></div>
+                </div>
+
+                <hr>
+
+                <h6 class="fw-bold small text-uppercase mb-2">Risk Calculation Matrix</h6>
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span>Likelihood (1-5):</span>
+                    <strong class="text-dark">{{ risk.likelihood }} / 5</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2 small">
+                    <span>Impact (1-5):</span>
+                    <strong class="text-dark">{{ risk.impact }} / 5</strong>
+                </div>
+                <div class="alert alert-{{ risk.badge_class }} py-2 text-center mb-0">
+                    <strong>Score: {{ risk.score }}</strong> &bull; {{ risk.category }} Risk
+                </div>
+            </div>
+        </div>
+
+        <!-- Associated Defects -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-bug text-danger"></i> Associated Defects</h6>
+                <a href="{{ url_for('defects.create_defect', tc_id=tc.id) }}" class="btn btn-sm btn-outline-danger">+ Log Defect</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for bug in defects %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{{ url_for('defects.detail_defect', defect_id=bug.id) }}" class="fw-bold text-danger text-decoration-none">
+                                {{ bug.bug_code }}
+                            </a>
+                            <div class="small text-truncate" style="max-width: 180px;">{{ bug.title }}</div>
+                        </div>
+                        <span class="badge {{ bug.status | badge_status }}">{{ bug.status }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted small py-3 text-center">No defects linked to this test case.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if requirement else 'New' }} Requirement - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-card-checklist text-primary"></i> 
+                    {{ 'Edit Requirement: ' + requirement.req_code if requirement else 'Define New Requirement' }}
+                </h5>
+                <small class="text-muted">Part of ISTQB Test Analysis: Defining testable business and technical requirements.</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Requirement Code <span class="text-danger">*</span></label>
+                            <input type="text" name="req_code" class="form-control" placeholder="REQ-AUTH-01" 
+                                   value="{{ requirement.req_code if requirement else '' }}" 
+                                   {% if requirement %}readonly{% endif %} required>
+                            <small class="text-muted">Length: 3 to 20 chars (BVA enforced)</small>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. User Session Expiration" 
+                                   value="{{ requirement.title if requirement else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="Functional" {% if requirement and requirement.category == 'Functional' %}selected{% endif %}>Functional</option>
+                                <option value="Security" {% if requirement and requirement.category == 'Security' %}selected{% endif %}>Security</option>
+                                <option value="Performance" {% if requirement and requirement.category == 'Performance' %}selected{% endif %}>Performance</option>
+                                <option value="Business Rule" {% if requirement and requirement.category == 'Business Rule' %}selected{% endif %}>Business Rule</option>
+                                <option value="Workflow" {% if requirement and requirement.category == 'Workflow' %}selected{% endif %}>Workflow</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="Low" {% if requirement and requirement.priority == 'Low' %}selected{% endif %}>Low</option>
+                                <option value="Medium" {% if not requirement or requirement.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                <option value="High" {% if requirement and requirement.priority == 'High' %}selected{% endif %}>High</option>
+                                <option value="Critical" {% if requirement and requirement.priority == 'Critical' %}selected{% endif %}>Critical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Description / Acceptance Criteria</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Detail the business rule, inputs, expected system behavior, and constraints...">{{ requirement.description if requirement else '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('requirements.list_requirements') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Requirement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

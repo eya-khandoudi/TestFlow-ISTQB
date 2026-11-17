@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Log Defect - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-bug-fill"></i> ISTQB Defect Incident Report</h5>
+                <small class="text-muted">Standardized bug logging with automated Decision Table triage assessment.</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="test_run_id" value="{{ run_id_prefill or '' }}">
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Defect Code <span class="text-danger">*</span></label>
+                            <input type="text" name="bug_code" class="form-control" placeholder="BUG-004" required>
+                            <small class="text-muted">Min 3, Max 20 chars</small>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Summary / Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="Concise statement of failure observation" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Associated Test Case</label>
+                            <select name="test_case_id" class="form-select">
+                                <option value="">-- Ad-hoc / Exploratory Bug --</option>
+                                {% for tc in test_cases %}
+                                    <option value="{{ tc.id }}" {% if tc_id_prefill and tc_id_prefill|int == tc.id %}selected{% endif %}>
+                                        {{ tc.tc_code }}: {{ tc.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Environment</label>
+                            <select name="environment" class="form-select">
+                                <option value="QA">QA Environment</option>
+                                <option value="Staging">Staging</option>
+                                <option value="UAT">UAT</option>
+                                <option value="Production">Production</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Severity (Technical Impact)</label>
+                            <select name="severity" class="form-select" id="bug_severity">
+                                <option value="Blocker">Blocker (Crash / Blocker)</option>
+                                <option value="Critical">Critical (Primary feature broken)</option>
+                                <option value="Major" selected>Major (Significant workaround)</option>
+                                <option value="Minor">Minor (Cosmetic / Trivial)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Assignee</label>
+                            <input type="text" name="assigned_to" class="form-control" placeholder="dev_team or unassigned" value="Unassigned">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4 pt-1">
+                                <input class="form-check-input" type="checkbox" name="is_core_flow" id="coreFlowCheck" value="1" checked>
+                                <label class="form-check-label fw-semibold" for="coreFlowCheck">
+                                    Affects Core Flow (Checkout/Payment)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Detailed Description</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Background context, browser/OS version, account info..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Steps to Reproduce <span class="text-danger">*</span></label>
+                        <textarea name="steps_to_reproduce" class="form-control font-monospace" rows="4" placeholder="1. Go to cart&#10;2. Enter quantity 0&#10;3. Click update cart" required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('defects.list_defects') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">Submit Defect</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

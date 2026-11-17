@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TestFlow ISTQB{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary"></i> QA Testing Dashboard</h2>
+        <p class="text-muted mb-0">Project: <strong>{{ project.name }}</strong> &bull; ISTQB Test Execution & Quality Health</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('test_runs.list_test_runs') }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-play-circle"></i> Active Test Runs
+        </a>
+        <a href="{{ url_for('test_cases.create_test_case') }}" class="btn btn-primary btn-sm ms-2">
+            <i class="bi bi-plus-circle"></i> New Test Case
+        </a>
+    </div>
+</div>
+
+<!-- Release Gate Verdict Callout (ISTQB Decision Table Outcome) -->
+<div class="alert alert-{{ metrics.release_gate.css_class }} shadow-sm d-flex align-items-center justify-content-between p-3 mb-4" role="alert">
+    <div class="d-flex align-items-center gap-3">
+        <div class="fs-1">
+            {% if metrics.release_gate.verdict == 'GO' %}
+                <i class="bi bi-check-circle-fill"></i>
+            {% elif metrics.release_gate.verdict == 'CONDITIONAL GO' %}
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            {% else %}
+                <i class="bi bi-x-octagon-fill"></i>
+            {% endif %}
+        </div>
+        <div>
+            <h5 class="alert-heading fw-bold mb-1">
+                IEEE 829 Release Gate Decision: 
+                <span class="badge bg-{{ metrics.release_gate.css_class }} fs-6">{{ metrics.release_gate.verdict }}</span>
+            </h5>
+            <p class="mb-0 small">{{ metrics.release_gate.reason }}</p>
+        </div>
+    </div>
+    <div>
+        <a href="{{ url_for('main.test_summary_report', run_id=1) }}" class="btn btn-sm btn-outline-dark">
+            <i class="bi bi-file-earmark-bar-graph"></i> View IEEE 829 Report
+        </a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Requirements</span>
+                    <h3 class="fw-bold my-1 text-dark">{{ metrics.req_count }}</h3>
+                    <a href="{{ url_for('requirements.list_requirements') }}" class="small text-decoration-none">Manage reqs &rarr;</a>
+                </div>
+                <div class="badge bg-primary-subtle text-primary p-3 fs-3 rounded-circle">
+                    <i class="bi bi-card-checklist"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Test Cases</span>
+                    <h3 class="fw-bold my-1 text-dark">{{ metrics.tc_count }}</h3>
+                    <a href="{{ url_for('test_cases.list_test_cases') }}" class="small text-decoration-none">View repository &rarr;</a>
+                </div>
+                <div class="badge bg-info-subtle text-info p-3 fs-3 rounded-circle">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Pass Rate</span>
+                    <h3 class="fw-bold my-1 {% if metrics.pass_rate >= 90 %}text-success{% elif metrics.pass_rate >= 75 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ metrics.pass_rate }}%
+                    </h3>
+                    <span class="small text-muted">{{ metrics.passed }} passed / {{ metrics.total_executions }} total</span>
+                </div>
+                <div class="badge bg-success-subtle text-success p-3 fs-3 rounded-circle">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card kpi-card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold text-uppercase">Defects</span>
+                    <h3 class="fw-bold my-1 text-danger">{{ metrics.defect_count }}</h3>
+                    <span class="small text-danger fw-semibold">{{ metrics.open_blockers }} Blocker/Critical</span>
+                </div>
+                <div class="badge bg-danger-subtle text-danger p-3 fs-3 rounded-circle">
+                    <i class="bi bi-bug"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-pie-chart text-primary"></i> Test Execution Status</h6>
+                <span class="badge bg-light text-dark border">Total: {{ metrics.total_executions }}</span>
+            </div>
+            <div class="card-body d-flex justify-content-center align-items-center">
+                <div style="max-height: 260px; max-width: 320px; width: 100%;">
+                    <canvas id="execChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 text-center small text-muted">
+                <span class="badge bg-success me-2">Pass: {{ metrics.passed }}</span>
+                <span class="badge bg-danger me-2">Fail: {{ metrics.failed }}</span>
+                <span class="badge bg-warning text-dark me-2">Blocked: {{ metrics.blocked }}</span>
+                <span class="badge bg-secondary">Untested: {{ metrics.untested }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart text-danger"></i> Defects by Severity</h6>
+                <a href="{{ url_for('defects.list_defects') }}" class="small text-decoration-none">View all</a>
+            </div>
+            <div class="card-body d-flex justify-content-center align-items-center">
+                <div style="max-height: 260px; width: 100%;">
+                    <canvas id="defectChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 text-center small text-muted">
+                Blockers: {{ metrics.defect_sev.get('Blocker', 0) }} &bull; 
+                Critical: {{ metrics.defect_sev.get('Critical', 0) }} &bull; 
+                Major: {{ metrics.defect_sev.get('Major', 0) }} &bull; 
+                Minor: {{ metrics.defect_sev.get('Minor', 0) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Test Runs & Recent Defects Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-play-circle text-primary"></i> Active Test Runs (STLC Execution)</h6>
+                <a href="{{ url_for('test_runs.create_test_run') }}" class="btn btn-sm btn-outline-primary">+ New Run</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Run Name</th>
+                                <th>Environment</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for run in active_runs %}
+                            <tr>
+                                <td class="fw-semibold">{{ run.run_code }}</td>
+                                <td>{{ run.name }}</td>
+                                <td><span class="badge bg-secondary">{{ run.environment }}</span></td>
+                                <td><span class="badge bg-primary">{{ run.status }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('test_runs.detail_test_run', run_id=run.id) }}" class="btn btn-sm btn-outline-dark">
+                                        Execute
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0"><i class="bi bi-bug text-danger"></i> Recent Defects (ISTQB Lifecycle)</h6>
+                <a href="{{ url_for('defects.create_defect') }}" class="btn btn-sm btn-danger">+ Log Defect</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bug in recent_defects %}
+                            <tr>
+                                <td class="fw-bold text-danger">{{ bug.bug_code }}</td>
+                                <td class="text-truncate" style="max-width: 200px;">{{ bug.title }}</td>
+                                <td><span class="badge {{ bug.severity | badge_severity }}">{{ bug.severity }}</span></td>
+                                <td><span class="badge {{ bug.status | badge_status }}">{{ bug.status }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('defects.detail_defect', defect_id=bug.id) }}" class="btn btn-sm btn-outline-secondary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Execution Chart
+    const ctxExec = document.getElementById('execChart').getContext('2d');
+    new Chart(ctxExec, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pass', 'Fail', 'Blocked', 'Untested'],
+            datasets: [{
+                data: [{{ metrics.passed }}, {{ metrics.failed }}, {{ metrics.blocked }}, {{ metrics.untested }}],
+                backgroundColor: ['#198754', '#dc3545', '#ffc107', '#6c757d'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Defect Severity Chart
+    const ctxDefect = document.getElementById('defectChart').getContext('2d');
+    new Chart(ctxDefect, {
+        type: 'bar',
+        data: {
+            labels: ['Blocker', 'Critical', 'Major', 'Minor'],
+            datasets: [{
+                label: 'Defects',
+                data: [
+                    {{ metrics.defect_sev.get('Blocker', 0) }},
+                    {{ metrics.defect_sev.get('Critical', 0) }},
+                    {{ metrics.defect_sev.get('Major', 0) }},
+                    {{ metrics.defect_sev.get('Minor', 0) }}
+                ],
+                backgroundColor: ['#721c24', '#dc3545', '#fd7e14', '#0dcaf0']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}
