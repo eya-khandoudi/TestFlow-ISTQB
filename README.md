@@ -94,6 +94,8 @@ TestFlow is built around the fundamental testing techniques defined in the ISTQB
 
 ## 5. Documentation & Deliverables
 
+- **Project Presentation (PowerPoint .pptx):** [TestFlow_ISTQB_Presentation.pptx](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_ISTQB_Presentation.pptx) *(13 widescreen 16:9 slides with speaker notes, tables, diagrams & embedded screenshots; ready for PowerPoint or Canva import)*
+- **Project Presentation Slide Deck (PDF):** [TestFlow_ISTQB_Presentation.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_ISTQB_Presentation.pdf) *(Landscape presentation slide deck ready for projection or screen sharing)*
 - **Live Presentation & Defense Guide (PDF):** [TestFlow_Live_Defense_Guide.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_Live_Defense_Guide.pdf) *(Step-by-step live demo script, ISTQB demonstration protocol & oral examination Q&A by Eya Khandoudi & Ichraf Sassi)*
 - **Official Full Project Report (PDF):** [TestFlow_Full_Project_Report.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_Full_Project_Report.pdf) *(Master ISTQB Software Testing Final Report, IEEE 829 Test Plan & Coverage Evaluation by Eya Khandoudi & Ichraf Sassi)*
 - **Illustrated Application Guide (PDF):** [TestFlow_ISTQB_Application_Guide.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_ISTQB_Application_Guide.pdf) *(16-page visual guide with high-resolution screenshots & UI breakdown)*
