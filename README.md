@@ -94,7 +94,9 @@ TestFlow is built around the fundamental testing techniques defined in the ISTQB
 
 ## 5. Documentation & Deliverables
 
-- **Official PDF Application Guide:** [TestFlow_ISTQB_Application_Guide.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_ISTQB_Application_Guide.pdf) (16-page publication-ready document with high-resolution screenshots)
+- **Live Presentation & Defense Guide (PDF):** [TestFlow_Live_Defense_Guide.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_Live_Defense_Guide.pdf) *(Step-by-step live demo script, ISTQB demonstration protocol & oral examination Q&A by Eya Khandoudi & Ichraf Sassi)*
+- **Official Full Project Report (PDF):** [TestFlow_Full_Project_Report.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_Full_Project_Report.pdf) *(Master ISTQB Software Testing Final Report, IEEE 829 Test Plan & Coverage Evaluation by Eya Khandoudi & Ichraf Sassi)*
+- **Illustrated Application Guide (PDF):** [TestFlow_ISTQB_Application_Guide.pdf](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TestFlow_ISTQB_Application_Guide.pdf) *(16-page visual guide with high-resolution screenshots & UI breakdown)*
 - **Illustrated Markdown Guide:** [APPLICATION_GUIDE.md](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/APPLICATION_GUIDE.md)
 - **ISTQB Methodology Guide:** [ISTQB_METHODOLOGY.md](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/ISTQB_METHODOLOGY.md)
 - **IEEE 829 Master Test Plan:** [TEST_PLAN_IEEE829.md](file:///c:/Users/Eya%20Khandoudi/Downloads/istqb/ISTQB/docs/TEST_PLAN_IEEE829.md)
